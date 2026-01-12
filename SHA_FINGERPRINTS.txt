@@ -1,0 +1,27 @@
+# SHA Fingerprints for Firebase
+
+## Add these to Firebase Console:
+
+SHA-1:
+51:92:21:BC:49:C6:9F:75:41:A1:4F:1A:87:F4:B7:8D:DA:38:78:38
+
+SHA-256:
+8C:4E:FD:D9:E6:14:55:73:AF:6E:48:0A:42:9F:12:CF:39:3D:C1:32:54:E2:CF:B6:92:7D:F9:4A:36:63:49:83
+
+## Firebase Console Link:
+https://console.firebase.google.com/project/cadenca-e5c04/settings/general
+
+## Steps:
+1. Go to Firebase Console (link above)
+2. Scroll to "Your apps" → Android app (com.cadenca.app)
+3. Click "Add fingerprint"
+4. Paste SHA-1 → Save
+5. Click "Add fingerprint" again
+6. Paste SHA-256 → Save
+7. Download new google-services.json
+8. Replace: health_app/android/app/google-services.json
+9. Rebuild: flutter build apk --release
+
+## After Adding:
+- Google Sign-In will work on Android
+- OAuth client will be auto-created in Google Cloud Console

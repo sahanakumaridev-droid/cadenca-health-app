@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "1078110054358",
+    "project_id": "cadenca-e5c04",
+    "storage_bucket": "cadenca-e5c04.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1078110054358:android:a742325f828a7ff7af6677",
+        "android_client_info": {
+          "package_name": "com.cadenca.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1078110054358-sn2bkgecb4u20fktd74ooh42koocns3m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cadenca.app",
+            "certificate_hash": "519221bc49c69f7541a14f1a87f4b78dda387838"
+          }
+        },
+        {
+          "client_id": "1078110054358-eja48004misrn7lh52trd8qnrev46mf3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNoNl0_kbyQ-Uk8bm8sVKgK7QNd2Gz6WA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1078110054358-eja48004misrn7lh52trd8qnrev46mf3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1078110054358-7huse1q07sqt7s6hhuebb9o25dv4pcof.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cadenca.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
