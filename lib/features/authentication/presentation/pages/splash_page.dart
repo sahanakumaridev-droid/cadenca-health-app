@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../../core/di/injection.dart' as di;
+import '../../../onboarding/data/datasources/onboarding_local_datasource.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -37,10 +39,20 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is AuthAuthenticated) {
-          // User is authenticated, navigate to onboarding
-          context.go(AppRouter.onboarding);
+          // Check if onboarding is completed
+          final onboardingDataSource = di.sl<OnboardingLocalDataSource>();
+          final isOnboardingCompleted = await onboardingDataSource
+              .isOnboardingCompleted();
+
+          if (isOnboardingCompleted) {
+            // User has completed onboarding, go to home
+            context.go(AppRouter.home);
+          } else {
+            // User needs to complete onboarding
+            context.go(AppRouter.postLoginTimezone);
+          }
         } else if (state is AuthUnauthenticated) {
           // User is not authenticated, navigate to login
           context.go(AppRouter.login);
@@ -51,93 +63,159 @@ class _SplashPageState extends State<SplashPage> {
           // Error occurred, navigate to login
           context.go(AppRouter.login);
         }
+        // Note: AuthLoading state is handled by showing the splash screen
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF1A1D2E), // Dark navy background
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Cadenca Logo - Stylized 'C' with orange dot
-              Container(
+        body: Stack(
+          children: [
+            // Background with gradient
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFF0E6D2), // Stronger beige
+                    Color(0xFFEADDC4), // Deeper beige
+                    Color(0xFFF0E6D2), // Back to stronger beige
+                    Color(0xFFF5EBD8), // Lighter but more visible beige
+                  ],
+                  stops: [0.0, 0.3, 0.7, 1.0],
+                ),
+              ),
+            ),
+            // Geometric shapes
+            Positioned(
+              top: -50,
+              right: -50,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 100,
+              left: -30,
+              child: Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4ECDC4), // Turquoise
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  color: Color(0xFF8B7355).withValues(alpha: 0.06),
                 ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Stylized 'C' letter
-                    const Text(
-                      'C',
-                      style: TextStyle(
-                        fontSize: 72,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: -2,
-                      ),
-                    ),
-                    // Orange dot indicator (top right)
-                    Positioned(
-                      top: 20,
-                      right: 20,
-                      child: Container(
-                        width: 16,
-                        height: 16,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFF6B6B), // Orange accent
-                          shape: BoxShape.circle,
+              ),
+            ),
+            Positioned(
+              bottom: 150,
+              right: 20,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF2C2C2C).withValues(alpha: 0.04),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -40,
+              left: -40,
+              child: Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+            ),
+            // Main content
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Cadenca Logo with health-focused design
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 25,
+                          offset: const Offset(0, 12),
+                          spreadRadius: 2,
                         ),
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          blurRadius: 15,
+                          offset: const Offset(-5, -5),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.asset(
+                        'assets/images/cadenca_logo.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // App Name
-              const Text(
-                'Cadenca',
-                style: TextStyle(
-                  fontSize: 36,
-                  color: Color(0xFF4ECDC4), // Turquoise
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Tagline
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  'Your personal wellness companion for optimized sleep and peak performance',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    height: 1.5,
                   ),
-                ),
-              ),
-              const SizedBox(height: 48),
+                  const SizedBox(height: 32),
 
-              // Loading Indicator
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
-                strokeWidth: 3,
+                  // App Name with health-focused gradient
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [
+                        Color(0xFF1B4B66), // Deep teal blue
+                        Color(0xFF2E7D8A), // Teal
+                        Color(0xFF52A085), // Sage green
+                      ],
+                    ).createShader(bounds),
+                    child: const Text(
+                      'Cadenca',
+                      style: TextStyle(
+                        fontSize: 36,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Tagline
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      'Your personal wellness companion for optimized sleep and peak performance',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF4A6B7C), // Muted teal-gray
+                        height: 1.5,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Loading Indicator
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFF8B7355),
+                    ), // Warm brown
+                    strokeWidth: 3,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -68,5 +68,19 @@
 	<array>
 		<string>armv7</string>
 	</array>
+	
+	<!-- Location permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access to suggest your timezone based on your current location.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access to suggest your timezone based on your current location.</string>
+	
+	<!-- Camera and Photo Library permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take photos of your flight roster for schedule analysis.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to select roster images for schedule analysis.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs photo library access to save roster images.</string>
 </dict>
 </plist>

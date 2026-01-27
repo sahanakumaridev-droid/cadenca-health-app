@@ -61,16 +61,44 @@ class _HomePageState extends State<HomePage>
                     floating: true,
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    title: Text(
-                      'Cadenca',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w300,
-                        letterSpacing: -0.5,
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
-                      ),
+                    title: BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        String displayText = 'Cadenca';
+                        if (state is AuthAuthenticated) {
+                          final displayName = state.user.displayName;
+                          final email = state.user.email;
+
+                          String name = 'User';
+                          if (displayName != null && displayName.isNotEmpty) {
+                            name = displayName;
+                          } else if (email.isNotEmpty) {
+                            name = email.split('@').first;
+                          }
+
+                          displayText = 'Hello, $name';
+                        }
+                        return Text(
+                          displayText,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
+                          ),
+                        );
+                      },
                     ),
                     actions: [
+                      IconButton(
+                        onPressed: () => context.push(AppRouter.profile),
+                        icon: Icon(
+                          Icons.person,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
+                        ),
+                      ),
                       IconButton(
                         onPressed: () => _showLogoutDialog(context),
                         icon: Icon(
@@ -88,21 +116,15 @@ class _HomePageState extends State<HomePage>
                     padding: const EdgeInsets.all(24.0),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
-                        // Welcome Section
-                        BlocBuilder<AuthBloc, AuthState>(
-                          builder: (context, state) {
-                            if (state is AuthAuthenticated) {
-                              return _buildWelcomeCard(
-                                context,
-                                state.user.displayName ?? 'Pilot',
-                                isDark,
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
+                        // Roster Upload Card - Moved to top
+                        _buildRosterUploadCard(context, isDark),
 
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
+
+                        // Flight Analysis Card
+                        _buildFlightAnalysisCard(context, isDark),
+
+                        const SizedBox(height: 24),
 
                         // Fatigue Score Card (Placeholder for API data)
                         _buildFatigueScoreCard(isDark),
@@ -130,63 +152,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildWelcomeCard(BuildContext context, String name, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.1)
-              : const Color(0xFFE2E8F0),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF14B8A6).withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.airline_seat_flat,
-              color: Color(0xFF14B8A6),
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome back, $name',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Ready to track your sleep',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark
-                        ? Colors.white.withOpacity(0.6)
-                        : const Color(0xFF64748B),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFatigueScoreCard(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -194,15 +159,17 @@ class _HomePageState extends State<HomePage>
         gradient: LinearGradient(
           colors: isDark
               ? [
-                  const Color(0xFF14B8A6).withOpacity(0.2),
+                  const Color(0xFF14B8A6).withValues(alpha: 0.2),
                   const Color(0xFF0F172A),
                 ]
-              : [const Color(0xFF14B8A6).withOpacity(0.1), Colors.white],
+              : [const Color(0xFF14B8A6).withValues(alpha: 0.1), Colors.white],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF14B8A6).withOpacity(0.3)),
+        border: Border.all(
+          color: const Color(0xFF14B8A6).withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +191,7 @@ class _HomePageState extends State<HomePage>
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF14B8A6).withOpacity(0.2),
+                  color: const Color(0xFF14B8A6).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -248,7 +215,7 @@ class _HomePageState extends State<HomePage>
                   Icons.show_chart,
                   size: 48,
                   color: isDark
-                      ? Colors.white.withOpacity(0.3)
+                      ? Colors.white.withValues(alpha: 0.3)
                       : const Color(0xFF94A3B8),
                 ),
                 const SizedBox(height: 12),
@@ -257,7 +224,7 @@ class _HomePageState extends State<HomePage>
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark
-                        ? Colors.white.withOpacity(0.5)
+                        ? Colors.white.withValues(alpha: 0.5)
                         : const Color(0xFF64748B),
                   ),
                 ),
@@ -292,11 +259,11 @@ class _HomePageState extends State<HomePage>
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withOpacity(0.1)
+                  ? Colors.white.withValues(alpha: 0.1)
                   : const Color(0xFFE2E8F0),
             ),
           ),
@@ -326,7 +293,7 @@ class _HomePageState extends State<HomePage>
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark
-                          ? Colors.white.withOpacity(0.6)
+                          ? Colors.white.withValues(alpha: 0.6)
                           : const Color(0xFF64748B),
                     ),
                   ),
@@ -343,11 +310,11 @@ class _HomePageState extends State<HomePage>
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.1)
+              ? Colors.white.withValues(alpha: 0.1)
               : const Color(0xFFE2E8F0),
         ),
       ),
@@ -370,7 +337,7 @@ class _HomePageState extends State<HomePage>
                   Icons.history,
                   size: 48,
                   color: isDark
-                      ? Colors.white.withOpacity(0.3)
+                      ? Colors.white.withValues(alpha: 0.3)
                       : const Color(0xFF94A3B8),
                 ),
                 const SizedBox(height: 12),
@@ -379,11 +346,104 @@ class _HomePageState extends State<HomePage>
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark
-                        ? Colors.white.withOpacity(0.5)
+                        ? Colors.white.withValues(alpha: 0.5)
                         : const Color(0xFF64748B),
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRosterUploadCard(BuildContext context, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [const Color(0xFF14B8A6), const Color(0xFF0F766E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF14B8A6).withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.upload_file,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Upload Your Roster',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Get AI-powered sleep optimization for your flights',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => context.go(AppRouter.rosterUpload),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF14B8A6),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Upload Roster',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward, size: 18),
+                ],
+              ),
             ),
           ),
         ],
@@ -448,7 +508,7 @@ class _HomePageState extends State<HomePage>
           'Are you sure you want to logout?',
           style: TextStyle(
             color: isDark
-                ? Colors.white.withOpacity(0.7)
+                ? Colors.white.withValues(alpha: 0.7)
                 : const Color(0xFF64748B),
           ),
         ),
@@ -459,7 +519,7 @@ class _HomePageState extends State<HomePage>
               'Cancel',
               style: TextStyle(
                 color: isDark
-                    ? Colors.white.withOpacity(0.7)
+                    ? Colors.white.withValues(alpha: 0.7)
                     : const Color(0xFF64748B),
               ),
             ),
@@ -470,11 +530,108 @@ class _HomePageState extends State<HomePage>
               context.read<AuthBloc>().add(SignOutEvent());
             },
             style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444).withOpacity(0.1),
+              backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
             ),
             child: const Text(
               'Logout',
               style: TextStyle(color: Color(0xFFEF4444)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFlightAnalysisCard(BuildContext context, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [const Color(0xFF8B5CF6), const Color(0xFF7C3AED)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.analytics,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Flight Analysis',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Analyze sleep & meal opportunities',
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'View your flight schedule and analyze sleep & meal opportunities between flights.',
+            style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.4),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                context.push(AppRouter.flightList);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF8B5CF6),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'View Flight Schedule',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward, size: 18),
+                ],
+              ),
             ),
           ),
         ],

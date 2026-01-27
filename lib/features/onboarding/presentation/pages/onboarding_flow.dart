@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/onboarding_service.dart';
 import 'onboarding_basics_page.dart';
-import 'onboarding_profession_page.dart';
-import 'onboarding_demographics_page.dart';
-import 'onboarding_preference_page.dart';
-import 'onboarding_timezone_page.dart';
 
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
@@ -25,22 +22,24 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     super.dispose();
   }
 
-  void _nextPage() {
-    if (_currentPage < 4) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      // Last page - go to home
-      context.go(AppRouter.home);
+  void _nextPage() async {
+    // Mark onboarding as completed
+    await OnboardingService.setOnboardingCompleted(true);
+
+    // Only 1 page now (basics intro) - go directly to login
+    if (mounted) {
+      context.go(AppRouter.login);
     }
   }
 
   void _previousPage() {
     if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
+      setState(() {
+        _currentPage--;
+      });
+      _pageController.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     }
@@ -48,51 +47,33 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: Stack(
         children: [
+          // Disable swiping by using NeverScrollableScrollPhysics
           PageView(
             controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            children: [
-              OnboardingBasicsPage(onContinue: _nextPage),
-              OnboardingProfessionPage(
-                onContinue: _nextPage,
-                onBack: _previousPage,
-              ),
-              OnboardingDemographicsPage(
-                onContinue: _nextPage,
-                onBack: _previousPage,
-              ),
-              OnboardingPreferencePage(
-                onContinue: _nextPage,
-                onBack: _previousPage,
-              ),
-              OnboardingTimezonePage(
-                onContinue: _nextPage,
-                onBack: _previousPage,
-              ),
-            ],
+            physics: const NeverScrollableScrollPhysics(), // Disable swiping
+            children: [OnboardingBasicsPage(onContinue: _nextPage)],
           ),
 
-          // Page indicator at top
+          // Page indicator at top - optimized for iPhone 12
           Positioned(
-            top: 60,
+            top: MediaQuery.of(context).padding.top + 16,
             left: 0,
             right: 0,
             child: Center(
               child: SmoothPageIndicator(
                 controller: _pageController,
-                count: 5,
-                effect: const WormEffect(
-                  dotWidth: 40,
-                  dotHeight: 4,
-                  activeDotColor: Color(0xFF14B8A6),
-                  dotColor: Color(0xFF334155),
+                count: 1,
+                effect: WormEffect(
+                  dotWidth: screenWidth * 0.07, // Optimized for iPhone 12
+                  dotHeight: 3.5,
+                  activeDotColor: const Color(0xFF14B8A6),
+                  dotColor: const Color(0xFF334155),
+                  spacing: 6,
                 ),
               ),
             ),

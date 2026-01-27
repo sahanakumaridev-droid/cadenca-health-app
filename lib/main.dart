@@ -5,6 +5,7 @@ import 'core/di/injection.dart' as di;
 import 'core/router/app_router.dart';
 import 'features/authentication/presentation/bloc/auth_bloc.dart';
 import 'features/signup/presentation/bloc/signup_bloc.dart';
+import 'features/roster/presentation/bloc/roster_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,9 +22,11 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<AuthBloc>(create: (_) => di.sl<AuthBloc>()),
         BlocProvider<SignupBloc>(create: (_) => di.sl<SignupBloc>()),
+        BlocProvider<RosterBloc>(create: (_) => RosterBloc()),
       ],
       child: MaterialApp.router(
         title: 'Cadenca',
+        debugShowCheckedModeBanner: false, // Remove debug banner
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFF3B82F6), // Sky Blue - Aviation & Medical

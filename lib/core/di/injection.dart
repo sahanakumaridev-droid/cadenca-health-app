@@ -1,10 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../features/authentication/data/datasources/auth_local_datasource.dart';
-import '../../features/authentication/data/datasources/auth_remote_datasource.dart';
 import '../../features/authentication/data/repositories/auth_repository_impl.dart';
 import '../../features/authentication/domain/repositories/auth_repository.dart';
 import '../../features/authentication/domain/usecases/apple_sign_in.dart';
@@ -22,6 +20,8 @@ import '../../features/signup/domain/usecases/get_signup_progress.dart';
 import '../../features/signup/domain/usecases/save_signup_step.dart';
 import '../../features/signup/domain/usecases/submit_signup_data.dart';
 import '../../features/signup/presentation/bloc/signup_bloc.dart';
+
+import '../../features/onboarding/data/datasources/onboarding_local_datasource.dart';
 
 import '../network/network_info.dart';
 
@@ -51,21 +51,10 @@ Future<void> init() async {
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-      networkInfo: sl(),
-    ),
+    () => AuthRepositoryImpl(localDataSource: sl()),
   );
 
   // Data sources
-  sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(
-      client: sl(),
-      googleSignIn: GoogleSignIn(scopes: ['email', 'profile']),
-    ),
-  );
-
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
   );
@@ -93,6 +82,12 @@ Future<void> init() async {
   // Data sources
   sl.registerLazySingleton<SignupLocalDataSource>(
     () => SignupLocalDataSourceImpl(sharedPreferences: sl()),
+  );
+
+  //! Features - Onboarding
+  // Data sources
+  sl.registerLazySingleton<OnboardingLocalDataSource>(
+    () => OnboardingLocalDataSourceImpl(sharedPreferences: sl()),
   );
 
   //! Core

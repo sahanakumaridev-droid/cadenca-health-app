@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../data/timezone_data_with_coords.dart';
 
 class OnboardingTimezonePage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -20,23 +21,14 @@ class _OnboardingTimezonePageState extends State<OnboardingTimezonePage>
   late AnimationController _cloudController;
   String? _selectedTimezone;
   final TextEditingController _searchController = TextEditingController();
-  List<Map<String, String>> _filteredTimezones = [];
-
-  final List<Map<String, String>> _timezones = [
-    {'city': 'London', 'code': 'GMT/UTC', 'offset': '+0:00'},
-    {'city': 'New York', 'code': 'EST', 'offset': '-5:00'},
-    {'city': 'Los Angeles', 'code': 'PST', 'offset': '-8:00'},
-    {'city': 'Dubai', 'code': 'GST', 'offset': '+4:00'},
-    {'city': 'Singapore', 'code': 'SGT', 'offset': '+8:00'},
-    {'city': 'Sydney', 'code': 'AEDT', 'offset': '+11:00'},
-    {'city': 'Tokyo', 'code': 'JST', 'offset': '+9:00'},
-    {'city': 'Frankfurt', 'code': 'CET', 'offset': '+1:00'},
-  ];
+  List<Map<String, dynamic>> _filteredTimezones = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
-    _filteredTimezones = _timezones;
+    // Start with popular US cities
+    _filteredTimezones = TimezoneData.getPopularUSCities();
     _cloudController = AnimationController(
       duration: const Duration(seconds: 30),
       vsync: this,
@@ -52,22 +44,31 @@ class _OnboardingTimezonePageState extends State<OnboardingTimezonePage>
 
   void _filterTimezones(String query) {
     setState(() {
-      if (query.isEmpty) {
-        _filteredTimezones = _timezones;
-      } else {
-        _filteredTimezones = _timezones.where((tz) {
-          final cityLower = tz['city']!.toLowerCase();
-          final codeLower = tz['code']!.toLowerCase();
-          final searchLower = query.toLowerCase();
-          return cityLower.contains(searchLower) ||
-              codeLower.contains(searchLower);
-        }).toList();
+      _isSearching = query.isNotEmpty;
+      _filteredTimezones = TimezoneData.searchTimezones(query);
+    });
+  }
+
+  void _selectTimezone(Map<String, dynamic> timezone) {
+    setState(() {
+      _selectedTimezone = timezone['city']?.toString();
+    });
+
+    // Auto-advance after selection
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        widget.onContinue();
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenHeight < 700;
+    final isMediumScreen = screenHeight >= 700 && screenHeight < 850;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
@@ -75,165 +76,296 @@ class _OnboardingTimezonePageState extends State<OnboardingTimezonePage>
           _buildClouds(),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32.0),
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.06,
+                vertical: isSmallScreen ? 12 : (isMediumScreen ? 16 : 20),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 60),
+                  SizedBox(
+                    height: isSmallScreen ? 25 : (isMediumScreen ? 35 : 45),
+                  ),
 
-                  const Icon(Icons.public, color: Color(0xFF14B8A6), size: 32),
-
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    'What do you call home?',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  // Icon
+                  Container(
+                    padding: EdgeInsets.all(isSmallScreen ? 12 : 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF14B8A6).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      Icons.public,
+                      color: const Color(0xFF14B8A6),
+                      size: isSmallScreen ? 26 : 30,
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: isSmallScreen ? 18 : (isMediumScreen ? 22 : 26),
+                  ),
+
+                  // Title
+                  Text(
+                    'What do you call home?',
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 26 : (isMediumScreen ? 29 : 32),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      height: 1.1,
+                    ),
+                  ),
+
+                  SizedBox(height: isSmallScreen ? 8 : 10),
 
                   Text(
                     'Select your primary residence timezone. This helps us calculate your circadian rhythm.',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.6),
+                      fontSize: isSmallScreen ? 14 : (isMediumScreen ? 15 : 16),
+                      color: Colors.white.withValues(alpha: 0.6),
+                      height: 1.3,
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(
+                    height: isSmallScreen ? 24 : (isMediumScreen ? 28 : 32),
+                  ),
 
                   // Search bar
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isSmallScreen ? 14 : 16,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.search,
-                          color: Colors.white.withOpacity(0.4),
-                          size: 20,
+                          color: Colors.white.withValues(alpha: 0.4),
+                          size: isSmallScreen ? 18 : 20,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: isSmallScreen ? 10 : 12),
                         Expanded(
                           child: TextField(
                             controller: _searchController,
                             onChanged: _filterTimezones,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isSmallScreen ? 14 : 15,
+                            ),
                             decoration: InputDecoration(
-                              hintText: 'Search city or timezone',
+                              hintText: 'Search city, timezone, or region',
                               hintStyle: TextStyle(
-                                color: Colors.white.withOpacity(0.4),
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontSize: isSmallScreen ? 14 : 15,
                               ),
                               border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: isSmallScreen ? 12 : 14,
+                              ),
                             ),
                           ),
                         ),
+                        if (_searchController.text.isNotEmpty)
+                          GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              _filterTimezones('');
+                            },
+                            child: Icon(
+                              Icons.clear,
+                              color: Colors.white.withValues(alpha: 0.4),
+                              size: isSmallScreen ? 18 : 20,
+                            ),
+                          ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // Timezone grid
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1.3,
-                        ),
-                    itemCount: _filteredTimezones.length,
-                    itemBuilder: (context, index) {
-                      final tz = _filteredTimezones[index];
-                      final isSelected = _selectedTimezone == tz['city'];
-
-                      return InkWell(
-                        onTap: () {
-                          setState(() => _selectedTimezone = tz['city']);
-                          // Auto-advance after selection
-                          Future.delayed(const Duration(milliseconds: 300), () {
-                            if (mounted) {
-                              widget.onContinue();
-                            }
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFF14B8A6).withOpacity(0.15)
-                                : Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFF14B8A6)
-                                  : Colors.white.withOpacity(0.1),
-                              width: isSelected ? 2 : 1,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.location_on,
-                                    color: Color(0xFF14B8A6),
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      tz['city']!,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                tz['code']!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white.withOpacity(0.5),
-                                ),
-                              ),
-                              const Spacer(),
-                              Text(
-                                tz['offset']!,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white.withOpacity(0.7),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                  SizedBox(
+                    height: isSmallScreen ? 16 : (isMediumScreen ? 20 : 24),
                   ),
 
-                  const SizedBox(height: 24),
+                  // Section header
+                  if (!_isSearching) ...[
+                    Text(
+                      'POPULAR US CITIES',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1,
+                        color: Colors.white.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    SizedBox(height: isSmallScreen ? 12 : 16),
+                  ] else ...[
+                    Text(
+                      'SEARCH RESULTS (${_filteredTimezones.length})',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1,
+                        color: Colors.white.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    SizedBox(height: isSmallScreen ? 12 : 16),
+                  ],
 
+                  // Timezone grid
+                  if (_filteredTimezones.isEmpty) ...[
+                    Container(
+                      padding: EdgeInsets.all(isSmallScreen ? 20 : 24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            color: Colors.white.withValues(alpha: 0.3),
+                            size: isSmallScreen ? 32 : 40,
+                          ),
+                          SizedBox(height: isSmallScreen ? 12 : 16),
+                          Text(
+                            'No cities found',
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 16 : 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                          SizedBox(height: isSmallScreen ? 6 : 8),
+                          Text(
+                            'Try searching for a different city or timezone',
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 13 : 14,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else ...[
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: isSmallScreen ? 10 : 12,
+                        mainAxisSpacing: isSmallScreen ? 10 : 12,
+                        childAspectRatio: isSmallScreen ? 1.4 : 1.3,
+                      ),
+                      itemCount: _filteredTimezones.length,
+                      itemBuilder: (context, index) {
+                        final tz = _filteredTimezones[index];
+                        final isSelected =
+                            _selectedTimezone == tz['city']?.toString();
+
+                        return InkWell(
+                          onTap: () => _selectTimezone(tz),
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            padding: EdgeInsets.all(isSmallScreen ? 12 : 14),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(
+                                      0xFF14B8A6,
+                                    ).withValues(alpha: 0.15)
+                                  : Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFF14B8A6)
+                                    : Colors.white.withValues(alpha: 0.1),
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
+                                      color: const Color(0xFF14B8A6),
+                                      size: isSmallScreen ? 14 : 16,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        tz['city']?.toString() ?? '',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 14 : 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Icon(
+                                        Icons.check_circle,
+                                        color: const Color(0xFF14B8A6),
+                                        size: isSmallScreen ? 16 : 18,
+                                      ),
+                                  ],
+                                ),
+                                SizedBox(height: isSmallScreen ? 3 : 4),
+                                Text(
+                                  tz['region']?.toString() ?? '',
+                                  style: TextStyle(
+                                    fontSize: isSmallScreen ? 10 : 11,
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                                const Spacer(),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      tz['code']?.toString() ?? '',
+                                      style: TextStyle(
+                                        fontSize: isSmallScreen ? 11 : 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      'GMT${tz['offset']?.toString() ?? ''}',
+                                      style: TextStyle(
+                                        fontSize: isSmallScreen ? 12 : 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF14B8A6),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+
+                  SizedBox(
+                    height: isSmallScreen ? 20 : (isMediumScreen ? 24 : 28),
+                  ),
+
+                  // Navigation buttons
                   Row(
                     children: [
                       IconButton(
@@ -241,13 +373,13 @@ class _OnboardingTimezonePageState extends State<OnboardingTimezonePage>
                         icon: const Icon(Icons.arrow_back),
                         color: Colors.white,
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.1),
+                          backgroundColor: Colors.white.withValues(alpha: 0.1),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: SizedBox(
-                          height: 56,
+                          height: isSmallScreen ? 50 : 54,
                           child: ElevatedButton(
                             onPressed: _selectedTimezone != null
                                 ? widget.onContinue
@@ -255,25 +387,29 @@ class _OnboardingTimezonePageState extends State<OnboardingTimezonePage>
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF14B8A6),
                               foregroundColor: const Color(0xFF0F172A),
-                              disabledBackgroundColor: Colors.white.withOpacity(
-                                0.1,
+                              disabledBackgroundColor: Colors.white.withValues(
+                                alpha: 0.1,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
+                              elevation: 0,
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   'Continue',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: isSmallScreen ? 15 : 16,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward, size: 20),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward,
+                                  size: isSmallScreen ? 18 : 20,
+                                ),
                               ],
                             ),
                           ),
@@ -281,6 +417,9 @@ class _OnboardingTimezonePageState extends State<OnboardingTimezonePage>
                       ),
                     ],
                   ),
+
+                  // Bottom safe area padding
+                  SizedBox(height: MediaQuery.of(context).padding.bottom + 12),
                 ],
               ),
             ),

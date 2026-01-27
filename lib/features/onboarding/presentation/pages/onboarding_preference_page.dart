@@ -39,10 +39,49 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          _buildClouds(),
+          // Background with beige gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFF0E6D2), // Stronger beige
+                  Color(0xFFEADDC4), // Deeper beige
+                  Color(0xFFF0E6D2), // Back to stronger beige
+                  Color(0xFFF5EBD8), // Lighter but more visible beige
+                ],
+                stops: [0.0, 0.3, 0.7, 1.0],
+              ),
+            ),
+          ),
+          // Geometric shapes for visual interest
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B7355).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
+            left: -80,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B7355).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(40),
+              ),
+            ),
+          ),
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
@@ -55,7 +94,7 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: Color(0xFF2C2C2C),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -63,7 +102,7 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                     'Choose your default time adaptation strategy. You can change this for individual trips.',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.6),
+                      color: const Color(0xFF5A5A5A),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -103,17 +142,17 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFBBF24).withOpacity(0.1),
+                      color: const Color(0xFF8B7355).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFFFBBF24).withOpacity(0.3),
+                        color: const Color(0xFF8B7355).withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
                       children: [
                         const Icon(
                           Icons.lightbulb_outline,
-                          color: Color(0xFFFBBF24),
+                          color: Color(0xFF8B7355),
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -122,7 +161,9 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                             'Pro Tip\nMost airline crews find "Let Cadenca Decide" works best for complex rosters with multiple destinations.',
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.white.withOpacity(0.8),
+                              color: const Color(
+                                0xFF2C2C2C,
+                              ).withValues(alpha: 0.8),
                               height: 1.4,
                             ),
                           ),
@@ -138,9 +179,9 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                       IconButton(
                         onPressed: widget.onBack,
                         icon: const Icon(Icons.arrow_back),
-                        color: Colors.white,
+                        color: const Color(0xFF2C2C2C),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.1),
+                          backgroundColor: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -152,10 +193,13 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                                 ? widget.onContinue
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF14B8A6),
-                              foregroundColor: const Color(0xFF0F172A),
-                              disabledBackgroundColor: Colors.white.withOpacity(
-                                0.1,
+                              backgroundColor: const Color(0xFF8B7355),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: const Color(
+                                0xFF8B7355,
+                              ).withValues(alpha: 0.4),
+                              disabledForegroundColor: Colors.white.withValues(
+                                alpha: 0.7,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -214,13 +258,13 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF14B8A6).withOpacity(0.15)
-              : Colors.white.withOpacity(0.05),
+              ? const Color(0xFF8B7355).withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF14B8A6)
-                : Colors.white.withOpacity(0.1),
+                ? const Color(0xFF8B7355)
+                : const Color(0xFF8B7355).withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -229,10 +273,10 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF14B8A6).withOpacity(0.2),
+                color: const Color(0xFF8B7355).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFF14B8A6), size: 24),
+              child: Icon(icon, color: const Color(0xFF8B7355), size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -247,7 +291,7 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: Color(0xFF2C2C2C),
                           ),
                         ),
                       ),
@@ -257,15 +301,15 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: badgeColor.withOpacity(0.2),
+                          color: const Color(0xFF8B7355).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           badge,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: badgeColor,
+                            color: Color(0xFF8B7355),
                           ),
                         ),
                       ),
@@ -276,7 +320,7 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
                     subtitle,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.6),
+                      color: const Color(0xFF5A5A5A),
                     ),
                   ),
                 ],
@@ -289,38 +333,10 @@ class _OnboardingPreferencePageState extends State<OnboardingPreferencePage>
   }
 
   Widget _buildClouds() {
-    return AnimatedBuilder(
-      animation: _cloudController,
-      builder: (context, child) {
-        return Stack(
-          children: [_buildCloud(0.2, 100, 0.03), _buildCloud(0.5, 250, 0.04)],
-        );
-      },
-    );
+    return const SizedBox.shrink(); // Remove clouds for beige theme
   }
 
   Widget _buildCloud(double speed, double top, double opacity) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final progress = _cloudController.value;
-    final dx = (progress * screenWidth * speed) % (screenWidth * 1.5);
-
-    return Positioned(
-      left: dx - screenWidth * 0.25,
-      top: top,
-      child: Opacity(
-        opacity: opacity,
-        child: ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            width: 150,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(100),
-            ),
-          ),
-        ),
-      ),
-    );
+    return const SizedBox.shrink(); // Remove clouds for beige theme
   }
 }

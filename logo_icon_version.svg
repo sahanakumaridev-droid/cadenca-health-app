@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="#F5F1E8" rx="180"/>
+  
+  <!-- Large C for small icon sizes -->
+  <text x="512" y="650" font-family="SF Pro Display, Helvetica Neue, Arial, sans-serif" 
+        font-size="500" font-weight="300" text-anchor="middle" fill="#2C2C2C">c</text>
+</svg>

@@ -89,7 +89,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.1),
+                      ).colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(60),
                     ),
                     child: Icon(

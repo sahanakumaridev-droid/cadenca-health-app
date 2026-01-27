@@ -22,13 +22,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final GoogleSignIn _googleSignIn;
 
   // Flag to use mock data when Firebase is not configured
-  static const bool _useMockGoogleSignIn = false; // Real Google Sign-In enabled
+  static const bool _useMockGoogleSignIn = true; // Enable mock for testing
 
   AuthRemoteDataSourceImpl({required this.client, GoogleSignIn? googleSignIn})
     : _googleSignIn =
           googleSignIn ?? GoogleSignIn(scopes: ['email', 'profile']);
 
-  @override
   Future<UserModel> signInWithGoogle() async {
     try {
       // Use mock data if Firebase is not configured
@@ -109,6 +108,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithApple() async {
     try {
+      // Check if Apple Sign-In is available on this platform
+      if (!await SignInWithApple.isAvailable()) {
+        throw AuthException('Apple Sign-In is not available on this device.');
+      }
+
       // Trigger Apple Sign-In flow
       // On iOS: Native Apple Sign-In
       // On Android/Web: Web-based Apple ID login
@@ -155,6 +159,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         if (e.message.contains('1001')) {
           throw AuthCancelledException('Apple sign-in was cancelled');
         }
+        // Check for invalid account error (Android without Service ID)
+        if (e.message.contains('invalid_client') ||
+            e.message.contains('Invalid Account')) {
+          throw AuthException(
+            'Apple Sign-In is not properly configured for Android. Please use Google Sign-In instead.',
+          );
+        }
         throw AuthException('Apple Sign-In error. Please try again.');
       } else if (e.code == AuthorizationErrorCode.notHandled) {
         throw AuthException('Apple Sign-In is not available on this device.');
@@ -165,6 +176,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (e.code == 'not-available') {
         throw AuthException('Apple Sign-In is only available on iOS devices.');
       }
+      if (e.code == 'invalid_client') {
+        throw AuthException(
+          'Apple Sign-In is not properly configured for Android. Please use Google Sign-In instead.',
+        );
+      }
       throw AuthException('Apple sign-in failed: ${e.message ?? e.code}');
     } catch (e) {
       throw AuthException('Apple sign-in failed: ${e.toString()}');
@@ -174,10 +190,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithFacebook() async {
     try {
-      // Mock Facebook Sign-In implementation
+      // Mock Facebook Sign-In implementation with realistic flow
       await Future.delayed(
-        const Duration(seconds: 1),
+        const Duration(milliseconds: 1200),
       ); // Simulate network delay
+
+      // Simulate random success/failure for more realistic testing
+      final random = Random();
+      if (random.nextBool() && random.nextBool()) {
+        // Occasionally simulate cancellation (25% chance)
+        throw AuthCancelledException('Facebook sign-in was cancelled');
+      }
 
       // Simulate successful Facebook sign-in
       final mockUser = UserModel(
@@ -191,6 +214,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       return mockUser;
+    } on AuthCancelledException {
+      rethrow;
     } catch (e) {
       throw AuthException('Facebook sign-in failed: ${e.toString()}');
     }
@@ -199,27 +224,57 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithEmail(String email, String password) async {
     try {
-      // Mock Email Sign-In implementation
+      // Mock Email Sign-In implementation with better validation
       await Future.delayed(
-        const Duration(seconds: 1),
+        const Duration(milliseconds: 1500),
       ); // Simulate network delay
 
-      // Simple validation
+      // Enhanced validation
       if (email.isEmpty || password.isEmpty) {
         throw AuthException('Email and password are required');
+      }
+
+      if (!email.contains('@') || !email.contains('.')) {
+        throw AuthException('Please enter a valid email address');
       }
 
       if (password.length < 6) {
         throw AuthException('Password must be at least 6 characters');
       }
 
+      // Simulate some common email/password combinations for testing
+      final testCredentials = {
+        'test@cadenca.com': 'password123',
+        'demo@cadenca.com': 'demo123',
+        'user@cadenca.com': 'user123',
+      };
+
+      bool isValidCredential =
+          testCredentials.containsKey(email.toLowerCase()) &&
+          testCredentials[email.toLowerCase()] == password;
+
+      // For demo purposes, also accept any email with password "cadenca123"
+      if (!isValidCredential && password == 'cadenca123') {
+        isValidCredential = true;
+      }
+
+      if (!isValidCredential) {
+        throw AuthException(
+          'Invalid email or password. Try: test@cadenca.com / password123',
+        );
+      }
+
       // Simulate successful email sign-in
       final mockUser = UserModel(
         id: 'email_${_generateRandomId()}',
         email: email,
-        displayName: email.split('@')[0],
+        displayName: email.split('@')[0].replaceAll('.', ' ').toUpperCase(),
         photoUrl: null,
-        isEmailVerified: false, // Email needs verification
+        isEmailVerified:
+            email.toLowerCase().contains('test') ||
+            email.toLowerCase().contains(
+              'demo',
+            ), // Test accounts are pre-verified
         provider: AuthProvider.email,
         createdAt: DateTime.now(),
       );

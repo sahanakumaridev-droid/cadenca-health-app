@@ -32,7 +32,7 @@ class EmailForm extends StatelessWidget {
             controller: emailController,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: const Color(0xFF1F2937), // Dark gray text for visibility
               fontSize: 15,
             ),
             decoration: InputDecoration(
@@ -40,29 +40,31 @@ class EmailForm extends StatelessWidget {
               labelStyle: TextStyle(
                 color: isDark
                     ? const Color(0xFF64748B)
-                    : const Color(0xFF94A3B8),
+                    : const Color(0xFF6B7280),
                 fontSize: 14,
               ),
-              hintText: 'pilot@example.com',
+              hintText: 'your.email@example.com',
               hintStyle: TextStyle(
                 color: isDark
                     ? const Color(0xFF475569)
-                    : const Color(0xFFCBD5E1),
+                    : const Color(0xFF9CA3AF),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
                   color: isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : const Color(0xFFE2E8F0),
+                      ? Colors.white.withValues(alpha: 0.4)
+                      : const Color(0xFF9CA3AF), // More visible gray border
+                  width: 1.5,
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
                   color: isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : const Color(0xFFE2E8F0),
+                      ? Colors.white.withValues(alpha: 0.4)
+                      : const Color(0xFF9CA3AF), // More visible gray border
+                  width: 1.5,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -71,13 +73,27 @@ class EmailForm extends StatelessWidget {
                   color: isDark
                       ? const Color(0xFF60A5FA)
                       : const Color(0xFF3B82F6),
+                  width: 2.0, // Thicker when focused
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: const Color(0xFFEF4444), // Red border for errors
                   width: 1.5,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: const Color(0xFFEF4444), // Red border for errors
+                  width: 2.0,
                 ),
               ),
               filled: true,
               fillColor: isDark
-                  ? Colors.white.withOpacity(0.03)
-                  : const Color(0xFFF8FAFC),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : const Color(0xFFF9FAFB),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 16,
@@ -92,7 +108,7 @@ class EmailForm extends StatelessWidget {
             controller: passwordController,
             obscureText: true,
             style: TextStyle(
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: const Color(0xFF1F2937), // Dark gray text for visibility
               fontSize: 15,
             ),
             decoration: InputDecoration(
@@ -100,29 +116,31 @@ class EmailForm extends StatelessWidget {
               labelStyle: TextStyle(
                 color: isDark
                     ? const Color(0xFF64748B)
-                    : const Color(0xFF94A3B8),
+                    : const Color(0xFF6B7280),
                 fontSize: 14,
               ),
               hintText: 'Enter your password',
               hintStyle: TextStyle(
                 color: isDark
                     ? const Color(0xFF475569)
-                    : const Color(0xFFCBD5E1),
+                    : const Color(0xFF9CA3AF),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
                   color: isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : const Color(0xFFE2E8F0),
+                      ? Colors.white.withValues(alpha: 0.4)
+                      : const Color(0xFF9CA3AF), // More visible gray border
+                  width: 1.5,
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
                   color: isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : const Color(0xFFE2E8F0),
+                      ? Colors.white.withValues(alpha: 0.4)
+                      : const Color(0xFF9CA3AF), // More visible gray border
+                  width: 1.5,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -131,13 +149,27 @@ class EmailForm extends StatelessWidget {
                   color: isDark
                       ? const Color(0xFF60A5FA)
                       : const Color(0xFF3B82F6),
+                  width: 2.0, // Thicker when focused
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: const Color(0xFFEF4444), // Red border for errors
                   width: 1.5,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: const Color(0xFFEF4444), // Red border for errors
+                  width: 2.0,
                 ),
               ),
               filled: true,
               fillColor: isDark
-                  ? Colors.white.withOpacity(0.03)
-                  : const Color(0xFFF8FAFC),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : const Color(0xFFF9FAFB),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 16,
@@ -159,13 +191,17 @@ class EmailForm extends StatelessWidget {
                     ? const Color(0xFF3B82F6)
                     : const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
-                elevation: 0,
-                shadowColor: Colors.transparent,
+                elevation: 2,
+                shadowColor: Color(0xFF3B82F6).withValues(alpha: 0.3),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Color(0xFF2563EB), // Darker blue border
+                    width: 1,
+                  ),
                 ),
                 disabledBackgroundColor: isDark
-                    ? Colors.white.withOpacity(0.1)
+                    ? Colors.white.withValues(alpha: 0.1)
                     : const Color(0xFFE2E8F0),
               ),
               child: isLoading

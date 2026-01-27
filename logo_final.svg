@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background matching client design -->
+  <rect width="1024" height="1024" fill="#F5F1E8" rx="180"/>
+  
+  <!-- cadenca text matching client style -->
+  <text x="512" y="550" font-family="SF Pro Display, -apple-system, system-ui, sans-serif" 
+        font-size="120" font-weight="500" text-anchor="middle" fill="#3A3A3A" 
+        letter-spacing="-1px">cadenca</text>
+</svg>

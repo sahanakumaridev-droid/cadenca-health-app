@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../../core/di/injection.dart' as di;
+import '../../data/datasources/onboarding_local_datasource.dart';
 
 class OnboardingProfessionPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -71,25 +73,71 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenHeight < 700;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          _buildClouds(),
+          // Background with beige gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFF0E6D2), // Stronger beige
+                  Color(0xFFEADDC4), // Deeper beige
+                  Color(0xFFF0E6D2), // Back to stronger beige
+                  Color(0xFFF5EBD8), // Lighter but more visible beige
+                ],
+                stops: [0.0, 0.3, 0.7, 1.0],
+              ),
+            ),
+          ),
+          // Geometric shapes for visual interest
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B7355).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
+            left: -80,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B7355).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(40),
+              ),
+            ),
+          ),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32.0),
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.08,
+                vertical: isSmallScreen ? 16 : 32,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 60),
+                  SizedBox(height: isSmallScreen ? 40 : 60),
 
-                  const Text(
+                  Text(
                     'What is your profession?',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: isSmallScreen ? 28 : 32,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: const Color(0xFF2C2C2C),
                     ),
                   ),
 
@@ -98,12 +146,12 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
                   Text(
                     'Different roles have different fatigue profiles. We\'ll tailor recommendations accordingly.',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.6),
+                      fontSize: isSmallScreen ? 14 : 16,
+                      color: const Color(0xFF5A5A5A),
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: isSmallScreen ? 32 : 40),
 
                   // Profession list
                   ..._professions.map((profession) {
@@ -112,12 +160,20 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: InkWell(
-                        onTap: () {
+                        onTap: () async {
                           setState(() {
                             _selectedProfession = profession['id'];
                           });
-                          // Auto-advance after selection
-                          Future.delayed(const Duration(milliseconds: 300), () {
+
+                          // Save profession data
+                          final onboardingDataSource = di
+                              .sl<OnboardingLocalDataSource>();
+                          await onboardingDataSource.setUserProfession(
+                            profession['title'],
+                          );
+
+                          // Auto-advance after selection with visual feedback
+                          Future.delayed(const Duration(milliseconds: 500), () {
                             if (mounted) {
                               widget.onContinue();
                             }
@@ -125,16 +181,18 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
                         },
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
-                          padding: const EdgeInsets.all(20),
+                          padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFF14B8A6).withOpacity(0.15)
-                                : Colors.white.withOpacity(0.05),
+                                ? const Color(0xFF8B7355).withValues(alpha: 0.2)
+                                : Colors.white.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isSelected
-                                  ? const Color(0xFF14B8A6)
-                                  : Colors.white.withOpacity(0.1),
+                                  ? const Color(0xFF8B7355)
+                                  : const Color(
+                                      0xFF8B7355,
+                                    ).withValues(alpha: 0.4),
                               width: isSelected ? 2 : 1,
                             ),
                           ),
@@ -144,13 +202,13 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: const Color(
-                                    0xFF14B8A6,
-                                  ).withOpacity(0.2),
+                                    0xFF8B7355,
+                                  ).withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
                                   profession['icon'],
-                                  color: const Color(0xFF14B8A6),
+                                  color: const Color(0xFF8B7355),
                                   size: 24,
                                 ),
                               ),
@@ -161,18 +219,18 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
                                   children: [
                                     Text(
                                       profession['title'],
-                                      style: const TextStyle(
-                                        fontSize: 16,
+                                      style: TextStyle(
+                                        fontSize: isSmallScreen ? 15 : 16,
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.white,
+                                        color: const Color(0xFF2C2C2C),
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       profession['subtitle'],
                                       style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white.withOpacity(0.6),
+                                        fontSize: isSmallScreen ? 13 : 14,
+                                        color: const Color(0xFF5A5A5A),
                                       ),
                                     ),
                                   ],
@@ -181,7 +239,7 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
                               if (isSelected)
                                 const Icon(
                                   Icons.check_circle,
-                                  color: Color(0xFF14B8A6),
+                                  color: Color(0xFF8B7355),
                                   size: 24,
                                 ),
                             ],
@@ -191,16 +249,16 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
                     );
                   }),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: isSmallScreen ? 20 : 24),
 
                   Row(
                     children: [
                       IconButton(
                         onPressed: widget.onBack,
                         icon: const Icon(Icons.arrow_back),
-                        color: Colors.white,
+                        color: const Color(0xFF2C2C2C),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.1),
+                          backgroundColor: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -212,10 +270,13 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
                                 ? widget.onContinue
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF14B8A6),
-                              foregroundColor: const Color(0xFF0F172A),
-                              disabledBackgroundColor: Colors.white.withOpacity(
-                                0.1,
+                              backgroundColor: const Color(0xFF8B7355),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: const Color(
+                                0xFF8B7355,
+                              ).withValues(alpha: 0.4),
+                              disabledForegroundColor: Colors.white.withValues(
+                                alpha: 0.7,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -250,42 +311,10 @@ class _OnboardingProfessionPageState extends State<OnboardingProfessionPage>
   }
 
   Widget _buildClouds() {
-    return AnimatedBuilder(
-      animation: _cloudController,
-      builder: (context, child) {
-        return Stack(
-          children: [
-            _buildCloud(0.2, 100, 0.03),
-            _buildCloud(0.5, 200, 0.04),
-            _buildCloud(0.8, 300, 0.035),
-          ],
-        );
-      },
-    );
+    return const SizedBox.shrink(); // Remove clouds for beige theme
   }
 
   Widget _buildCloud(double speed, double top, double opacity) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final progress = _cloudController.value;
-    final dx = (progress * screenWidth * speed) % (screenWidth * 1.5);
-
-    return Positioned(
-      left: dx - screenWidth * 0.25,
-      top: top,
-      child: Opacity(
-        opacity: opacity,
-        child: ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            width: 150,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(100),
-            ),
-          ),
-        ),
-      ),
-    );
+    return const SizedBox.shrink(); // Remove clouds for beige theme
   }
 }

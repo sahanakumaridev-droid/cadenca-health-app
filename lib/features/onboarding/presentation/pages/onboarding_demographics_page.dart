@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../../core/di/injection.dart' as di;
+import '../../data/datasources/onboarding_local_datasource.dart';
 
 class OnboardingDemographicsPage extends StatefulWidget {
   final VoidCallback onContinue;
@@ -37,10 +39,15 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
     super.dispose();
   }
 
-  void _checkAndAutoAdvance() {
+  void _checkAndAutoAdvance() async {
     // Auto-advance when both gender and age are selected
     if (_selectedGender != null && _selectedAgeGroup != null) {
-      Future.delayed(const Duration(milliseconds: 300), () {
+      // Save demographics data
+      final onboardingDataSource = di.sl<OnboardingLocalDataSource>();
+      await onboardingDataSource.setUserGender(_selectedGender!);
+      await onboardingDataSource.setUserAgeGroup(_selectedAgeGroup!);
+
+      Future.delayed(const Duration(milliseconds: 600), () {
         if (mounted) {
           widget.onContinue();
         }
@@ -50,35 +57,81 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenHeight < 700;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          _buildClouds(),
+          // Background with beige gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFF0E6D2), // Stronger beige
+                  Color(0xFFEADDC4), // Deeper beige
+                  Color(0xFFF0E6D2), // Back to stronger beige
+                  Color(0xFFF5EBD8), // Lighter but more visible beige
+                ],
+                stops: [0.0, 0.3, 0.7, 1.0],
+              ),
+            ),
+          ),
+          // Geometric shapes for visual interest
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B7355).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
+            left: -80,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B7355).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(40),
+              ),
+            ),
+          ),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32.0),
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.08,
+                vertical: isSmallScreen ? 16 : 32,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 60),
-                  const Text(
+                  SizedBox(height: isSmallScreen ? 40 : 60),
+                  Text(
                     'Tell us about yourself',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: isSmallScreen ? 28 : 32,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: const Color(0xFF2C2C2C),
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'This helps us personalize your wellness recommendations based on research.',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.6),
+                      fontSize: isSmallScreen ? 14 : 16,
+                      color: const Color(0xFF5A5A5A),
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: isSmallScreen ? 32 : 40),
 
                   // Gender selection
                   Text(
@@ -87,7 +140,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1,
-                      color: Colors.white.withOpacity(0.5),
+                      color: const Color(0xFF5A5A5A).withValues(alpha: 0.8),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -98,6 +151,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                           icon: '👨',
                           label: 'Male',
                           isSelected: _selectedGender == 'male',
+                          isSmallScreen: isSmallScreen,
                           onTap: () {
                             setState(() => _selectedGender = 'male');
                             _checkAndAutoAdvance();
@@ -110,6 +164,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                           icon: '👩',
                           label: 'Female',
                           isSelected: _selectedGender == 'female',
+                          isSmallScreen: isSmallScreen,
                           onTap: () {
                             setState(() => _selectedGender = 'female');
                             _checkAndAutoAdvance();
@@ -119,7 +174,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                     ],
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: isSmallScreen ? 32 : 40),
 
                   // Age group selection
                   Text(
@@ -128,7 +183,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1,
-                      color: Colors.white.withOpacity(0.5),
+                      color: const Color(0xFF5A5A5A).withValues(alpha: 0.8),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -138,6 +193,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                         child: _buildOptionCard(
                           label: '18-24',
                           isSelected: _selectedAgeGroup == '18-24',
+                          isSmallScreen: isSmallScreen,
                           onTap: () {
                             setState(() => _selectedAgeGroup = '18-24');
                             _checkAndAutoAdvance();
@@ -149,6 +205,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                         child: _buildOptionCard(
                           label: '25-34',
                           isSelected: _selectedAgeGroup == '25-34',
+                          isSmallScreen: isSmallScreen,
                           onTap: () {
                             setState(() => _selectedAgeGroup = '25-34');
                             _checkAndAutoAdvance();
@@ -160,6 +217,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                         child: _buildOptionCard(
                           label: '35-44',
                           isSelected: _selectedAgeGroup == '35-44',
+                          isSmallScreen: isSmallScreen,
                           onTap: () {
                             setState(() => _selectedAgeGroup = '35-44');
                             _checkAndAutoAdvance();
@@ -175,6 +233,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                         child: _buildOptionCard(
                           label: '45-54',
                           isSelected: _selectedAgeGroup == '45-54',
+                          isSmallScreen: isSmallScreen,
                           onTap: () {
                             setState(() => _selectedAgeGroup = '45-54');
                             _checkAndAutoAdvance();
@@ -186,6 +245,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                         child: _buildOptionCard(
                           label: '55-64',
                           isSelected: _selectedAgeGroup == '55-64',
+                          isSmallScreen: isSmallScreen,
                           onTap: () {
                             setState(() => _selectedAgeGroup = '55-64');
                             _checkAndAutoAdvance();
@@ -197,6 +257,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                         child: _buildOptionCard(
                           label: '65+',
                           isSelected: _selectedAgeGroup == '65+',
+                          isSmallScreen: isSmallScreen,
                           onTap: () {
                             setState(() => _selectedAgeGroup = '65+');
                             _checkAndAutoAdvance();
@@ -206,7 +267,7 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                     ],
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: isSmallScreen ? 24 : 32),
 
                   // Privacy note
                   Row(
@@ -214,31 +275,33 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                       Icon(
                         Icons.lock_outline,
                         size: 16,
-                        color: Colors.white.withOpacity(0.4),
+                        color: const Color(0xFF5A5A5A).withValues(alpha: 0.6),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Your personal data is encrypted and never shared. We only use this to improve your recommendations.',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.4),
+                            fontSize: isSmallScreen ? 11 : 12,
+                            color: const Color(
+                              0xFF5A5A5A,
+                            ).withValues(alpha: 0.6),
                           ),
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: isSmallScreen ? 32 : 40),
 
                   Row(
                     children: [
                       IconButton(
                         onPressed: widget.onBack,
                         icon: const Icon(Icons.arrow_back),
-                        color: Colors.white,
+                        color: const Color(0xFF2C2C2C),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.1),
+                          backgroundColor: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -252,10 +315,13 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
                                 ? widget.onContinue
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF14B8A6),
-                              foregroundColor: const Color(0xFF0F172A),
-                              disabledBackgroundColor: Colors.white.withOpacity(
-                                0.1,
+                              backgroundColor: const Color(0xFF8B7355),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: const Color(
+                                0xFF8B7355,
+                              ).withValues(alpha: 0.4),
+                              disabledForegroundColor: Colors.white.withValues(
+                                alpha: 0.7,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -293,47 +359,38 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
     String? icon,
     required String label,
     required bool isSelected,
+    required bool isSmallScreen,
     required VoidCallback onTap,
-    bool autoAdvance = false,
   }) {
     return InkWell(
-      onTap: () {
-        onTap();
-        if (autoAdvance) {
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted) {
-              widget.onContinue();
-            }
-          });
-        }
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 16 : 20),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF14B8A6).withOpacity(0.15)
-              : Colors.white.withOpacity(0.05),
+              ? const Color(0xFF8B7355).withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF14B8A6)
-                : Colors.white.withOpacity(0.1),
+                ? const Color(0xFF8B7355)
+                : const Color(0xFF8B7355).withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),
         child: Column(
           children: [
             if (icon != null) ...[
-              Text(icon, style: const TextStyle(fontSize: 32)),
+              Text(icon, style: TextStyle(fontSize: isSmallScreen ? 28 : 32)),
               const SizedBox(height: 8),
             ],
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 15,
+              style: TextStyle(
+                fontSize: isSmallScreen ? 14 : 15,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: const Color(0xFF2C2C2C),
               ),
             ),
           ],
@@ -343,38 +400,10 @@ class _OnboardingDemographicsPageState extends State<OnboardingDemographicsPage>
   }
 
   Widget _buildClouds() {
-    return AnimatedBuilder(
-      animation: _cloudController,
-      builder: (context, child) {
-        return Stack(
-          children: [_buildCloud(0.2, 100, 0.03), _buildCloud(0.5, 200, 0.04)],
-        );
-      },
-    );
+    return const SizedBox.shrink(); // Remove clouds for beige theme
   }
 
   Widget _buildCloud(double speed, double top, double opacity) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final progress = _cloudController.value;
-    final dx = (progress * screenWidth * speed) % (screenWidth * 1.5);
-
-    return Positioned(
-      left: dx - screenWidth * 0.25,
-      top: top,
-      child: Opacity(
-        opacity: opacity,
-        child: ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            width: 150,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(100),
-            ),
-          ),
-        ),
-      ),
-    );
+    return const SizedBox.shrink(); // Remove clouds for beige theme
   }
 }
