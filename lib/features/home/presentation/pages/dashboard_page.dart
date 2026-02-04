@@ -127,7 +127,7 @@ class _DashboardPageState extends State<DashboardPage>
 
         return Row(
           children: [
-            const CadencaLogo(size: 40),
+            const CadencaLogoCompact(height: 40, useWhiteText: true),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
