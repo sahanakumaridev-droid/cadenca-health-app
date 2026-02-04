@@ -5,7 +5,7 @@ import '../../features/authentication/presentation/pages/login_page.dart';
 import '../../features/authentication/presentation/pages/email_verification_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_flow.dart';
 import '../../features/onboarding/presentation/pages/post_login_onboarding_flow.dart';
-import '../../features/roster/presentation/pages/roster_upload_page.dart';
+import '../../features/roster/presentation/pages/modern_roster_upload_page.dart';
 import '../../features/roster/presentation/pages/flight_analysis_page.dart';
 import '../../features/roster/presentation/pages/single_flight_analysis_page.dart';
 import '../../features/roster/presentation/pages/enhanced_single_flight_analysis_page.dart';
@@ -17,7 +17,7 @@ import '../../features/signup/presentation/pages/demographics_page.dart';
 import '../../features/signup/presentation/pages/interests_page.dart';
 import '../../features/signup/presentation/pages/account_settings_page.dart';
 import '../../features/signup/presentation/pages/review_page.dart';
-import '../../features/home/presentation/pages/home_page.dart';
+import '../widgets/main_navigation.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -73,12 +73,12 @@ class AppRouter {
       GoRoute(
         path: home,
         name: 'home',
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => const MainNavigation(),
       ),
       GoRoute(
         path: rosterUpload,
         name: 'roster-upload',
-        builder: (context, state) => const RosterUploadPage(),
+        builder: (context, state) => const ModernRosterUploadPage(),
       ),
       GoRoute(
         path: flightList,
